@@ -8,10 +8,10 @@ namespace SanicballCore.Server
 {
     public class ServClient
     {
-        public Guid Guid { get; }
-        public string Name { get; }
+        public Guid Guid { get; private set; }
+        public string Name { get; private set; }
 
-        public NetConnection Connection { get; }
+        public NetConnection Connection { get; private set; }
 
         public bool CurrentlyLoadingStage { get; set; }
         public bool WantsToReturnToLobby { get; set; }

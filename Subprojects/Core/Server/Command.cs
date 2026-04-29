@@ -9,8 +9,8 @@ namespace SanicballCore.Server
 
     public class Command
     {
-        public string Name { get; }
-        public string Content { get; }
+        public string Name { get; private set; }
+        public string Content { get; private set; }
 
         public Command(string text)
         {

@@ -79,16 +79,18 @@ namespace SanicballServer
         }
 
         private static void InputLoop()
+{
+    while (true)
+    {
+        string input = Console.ReadLine();
+        if (!string.IsNullOrEmpty(input))
         {
-            string input;
-            while (true)
-            {
-                input = Console.ReadLine();
-                if (!string.IsNullOrEmpty(input))
-                {
-                    commandQueue.Add(new Command(input.ToString()));
-                }
-            }
+            Command newCmd = new Command(input);
+            // Debug-Ausgabe, damit du siehst, dass der Tastendruck registriert wurde
+            Console.WriteLine("-> Command entered: " + newCmd.Name); 
+            commandQueue.Add(newCmd);
         }
+    }
+}
     }
 }

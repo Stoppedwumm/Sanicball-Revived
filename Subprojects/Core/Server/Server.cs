@@ -17,7 +17,7 @@ namespace SanicballCore.Server
 {
     public class LogArgs : EventArgs
     {
-        public LogEntry Entry { get; }
+        public LogEntry Entry { get; private set; }
 
         public LogArgs(LogEntry entry)
         {
@@ -34,18 +34,23 @@ namespace SanicballCore.Server
     }
 
     public struct LogEntry
-    {
-        public DateTime Timestamp { get; }
-        public string Message { get; }
-        public LogType Type { get; }
+{
+    private DateTime _timestamp;
+    private string _message;
+    private LogType _type;
 
-        public LogEntry(DateTime timestamp, string message, LogType type)
-        {
-            Timestamp = timestamp;
-            Message = message;
-            Type = type;
-        }
+    public DateTime Timestamp { get { return _timestamp; } }
+    public string Message { get { return _message; } }
+    public LogType Type { get { return _type; } }
+
+    // Konstruktor mit 3 Argumenten
+    public LogEntry(DateTime timestamp, string message, LogType type)
+    {
+        this._timestamp = timestamp;
+        this._message = message;
+        this._type = type;
     }
+}
 
     public class Server : IDisposable
     {
@@ -509,7 +514,7 @@ namespace SanicballCore.Server
 						}
 						else 
 						{
-							var urls = input.Split(' ');
+							var urls = input.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 							newConfig.ServerListURLs = urls;
 						}
 					}
@@ -1444,7 +1449,7 @@ namespace SanicballCore.Server
                 if (!debugMode && type == LogType.Debug)
                     return;
                 LogEntry entry = new LogEntry(DateTime.Now, "[" + DateTime.Now.ToString("HH:mm:ss") + "] " + message.ToString(), type);
-                OnLog?.Invoke(this, new LogArgs(entry));
+                OnLog.Invoke(this, new LogArgs(entry));
                 log.Add(entry);
             }
         }
