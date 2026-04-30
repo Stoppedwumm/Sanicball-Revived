@@ -13,7 +13,7 @@ PlayerSettings:
   useOnDemandResources: 0
   accelerometerFrequency: 60
   companyName: BK-TN
-  productName: Sanicball v0.8.2
+  productName: Sanicball v0.9.1
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
   m_SplashScreenBackgroundColor: {r: 0.12156863, g: 0.12156863, b: 0.1254902, a: 1}
@@ -163,11 +163,11 @@ PlayerSettings:
   androidMaxAspectRatio: 2.4
   androidMinAspectRatio: 1
   applicationIdentifier:
-    Android: com.Company.ProductName
-    Standalone: unity.BK-TN.Sanicball v0.8.2
-    VisionOS: com.Company.ProductName
-    iPhone: com.Company.ProductName
-    tvOS: com.Company.ProductName
+    Android: net.Stoppedwumm.SanicBall
+    Standalone: net.Stoppedwumm.SanicBall
+    VisionOS: net.Stoppedwumm.SanicBall
+    iPhone: net.Stoppedwumm.SanicBall
+    tvOS: net.Stoppedwumm.SanicBall
   buildNumber:
     Standalone: 0
     VisionOS: 0
@@ -794,7 +794,7 @@ PlayerSettings:
   cloudProjectId: a654646d-c37c-4bde-b228-b9d97c841eaa
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: Sanicball v0.8.2
+  projectName: Sanicball v0.9.1
   organizationId: unity_34d2ef1f15485a1e8043
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 1
