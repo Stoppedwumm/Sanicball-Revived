@@ -57,6 +57,14 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: f2e8dc6161fc541c99ad23ec12eb1d92, type: 3}
   - name: RetroVision - Don't Wake Me Up
     clip: {fileID: 8300000, guid: b0f92cf3769bf45c0974fd66e4e4b70f, type: 3}
+  - name: MoFalk, MADZI - Let's Go
+    clip: {fileID: 8300000, guid: bb4f4b11839774676bb3949e8924266a, type: 3}
+  - name: Boom Kitty, Waterflame - Citadel
+    clip: {fileID: 8300000, guid: 72b9318ceeaca49c3a2e0316f3132dc4, type: 3}
+  - name: JOXION - RPM
+    clip: {fileID: 8300000, guid: 36e92e3b40d0f466f90f26a2789f1028, type: 3}
+  - name: Alan Walker - Dreamer (Triangle Alliance Remix)
+    clip: {fileID: 8300000, guid: 36e92e3b40d0f466f90f26a2789f1028, type: 3}
   fastSource: {fileID: 8200002}
 --- !u!82 &8200000
 AudioSource:
