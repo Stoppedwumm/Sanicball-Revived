@@ -140,7 +140,7 @@ PlayerSettings:
   loadStoreDebugModeEnabled: 0
   visionOSBundleVersion: 1.0
   tvOSBundleVersion: 1.0
-  bundleVersion: 1.0
+  bundleVersion: 0.9.1
   preloadedAssets: []
   metroInputSource: 0
   wsaTransparentSwapchain: 0
@@ -164,7 +164,7 @@ PlayerSettings:
   androidMinAspectRatio: 1
   applicationIdentifier:
     Android: net.Stoppedwumm.SanicBall
-    Standalone: net.Stoppedwumm.SanicBall
+    Standalone: com.BK-TN.Sanicball-v0.9.1
     VisionOS: net.Stoppedwumm.SanicBall
     iPhone: net.Stoppedwumm.SanicBall
     tvOS: net.Stoppedwumm.SanicBall
@@ -794,7 +794,7 @@ PlayerSettings:
   cloudProjectId: a654646d-c37c-4bde-b228-b9d97c841eaa
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: Sanicball v0.9.1
+  projectName: Sanicball v0.8.2
   organizationId: unity_34d2ef1f15485a1e8043
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 1
