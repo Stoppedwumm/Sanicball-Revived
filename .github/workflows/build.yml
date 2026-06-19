@@ -2,12 +2,12 @@ name: Build and Commit Assemblies
 
 on:
   push:
-    branches:
-      - main   # change if needed
+  workflow_dispatch: 
 
 jobs:
   build:
     runs-on: windows-latest
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
 
     steps:
       - name: Checkout repository
