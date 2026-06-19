@@ -12,11 +12,11 @@ PlayerSettings:
   targetDevice: 2
   useOnDemandResources: 0
   accelerometerFrequency: 60
-  companyName: BK-TN
-  productName: Sanicball v0.9.1
+  companyName: Stoppedwumm
+  productName: Sanicball
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
-  m_SplashScreenBackgroundColor: {r: 0.12156863, g: 0.12156863, b: 0.1254902, a: 1}
+  m_SplashScreenBackgroundColor: {r: 0, g: 0, b: 0, a: 1}
   m_ShowUnitySplashScreen: 1
   m_ShowUnitySplashLogo: 1
   m_SplashScreenOverlayOpacity: 1
@@ -140,7 +140,7 @@ PlayerSettings:
   loadStoreDebugModeEnabled: 0
   visionOSBundleVersion: 1.0
   tvOSBundleVersion: 1.0
-  bundleVersion: 0.9.1
+  bundleVersion: 0.10.0
   preloadedAssets: []
   metroInputSource: 0
   wsaTransparentSwapchain: 0
@@ -164,7 +164,7 @@ PlayerSettings:
   androidMinAspectRatio: 1
   applicationIdentifier:
     Android: net.Stoppedwumm.SanicBall
-    Standalone: com.BK-TN.Sanicball-v0.9.1
+    Standalone: com.Stoppedwumm.Sanicball
     VisionOS: net.Stoppedwumm.SanicBall
     iPhone: net.Stoppedwumm.SanicBall
     tvOS: net.Stoppedwumm.SanicBall
