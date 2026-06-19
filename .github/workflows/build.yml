@@ -1,0 +1,43 @@
+name: Build and Commit Assemblies
+
+on:
+  push:
+    branches:
+      - main   # change if needed
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1
+
+      - name: Restore NuGet packages
+        run: nuget restore Subprojects/Sanicball.NonUnity.sln
+
+      - name: Build solution
+        run: msbuild Subprojects/Sanicball.NonUnity.sln /p:Configuration=Release
+
+      # OPTIONAL: Copy output DLLs into Assets/Assemblies
+      - name: Copy assemblies
+        run: |
+          if (!(Test-Path "Assets/Assemblies")) {
+            New-Item -ItemType Directory -Path "Assets/Assemblies"
+          }
+          Copy-Item -Path "Subprojects/*/bin/Release/*.dll" -Destination "Assets/Assemblies" -Recurse -Force
+
+      - name: Commit changes (if any)
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git add Assets/Assemblies
+
+          git diff --cached --quiet || git commit -m "Update assemblies [skip ci]"
+          git push
