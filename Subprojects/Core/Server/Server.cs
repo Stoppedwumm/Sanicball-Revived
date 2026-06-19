@@ -103,7 +103,7 @@ namespace SanicballCore.Server
 
         //Server browser ping timer
         private Stopwatch serverListPingTimer = new Stopwatch();
-        private const float SERVER_BROWSER_PING_INTERVAL = 600;
+        private const float SERVER_BROWSER_PING_INTERVAL = 10;
 
         //Timer for starting a match by all players being ready
         private Stopwatch lobbyTimer = new Stopwatch();
