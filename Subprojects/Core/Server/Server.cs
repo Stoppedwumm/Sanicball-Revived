@@ -103,7 +103,7 @@ namespace SanicballCore.Server
 
         //Server browser ping timer
         private Stopwatch serverListPingTimer = new Stopwatch();
-        private const float SERVER_BROWSER_PING_INTERVAL = 10;
+        private float SERVER_BROWSER_PING_INTERVAL = 10;
 
         //Timer for starting a match by all players being ready
         private Stopwatch lobbyTimer = new Stopwatch();
@@ -681,6 +681,12 @@ namespace SanicballCore.Server
 
                             var response = client.UploadValues(listURL + "/add/", values);
                             string responseString = Encoding.Default.GetString(response);
+                            var sconfig = client.DownloadString(listURL + "/config");
+
+                            Log("Got config: " + sconfig, LogType.Debug);
+
+                            var psconfig = JsonConvert.DeserializeObject<LobbyServerConfig>(sconfig);
+                            SERVER_BROWSER_PING_INTERVAL = psconfig.PingInterval;
 
                             Log("Server list at '" + listURL +"' said: " + responseString, LogType.Debug);
                         }
