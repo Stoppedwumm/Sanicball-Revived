@@ -691,11 +691,18 @@ namespace SanicballCore.Server
                     {
                         Refresh();
                     }
+                    else if (received == "getCfgTemplate")
+                    {
+                        string response = JsonConvert.SerializeObject(new ServerConfig());
+                        byte[] reponseBytes = Encoding.UTF8.GetBytes(response);
+                        stream.Write(reponseBytes, 0, reponseBytes.Length);
+                    } 
                     else
                     {
-                        string response = "This is not an HTTP Server. Please do not message me again ";
+                        string response = "This is not an HTTP Server. Please do not message me again or i'll do unspeakable things to you";
                         byte[] responseBytes = Encoding.UTF8.GetBytes(response);
                         stream.Write(responseBytes, 0, responseBytes.Length);
+                        client.Close();
                     }
                 }
             }
