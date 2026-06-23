@@ -6,38 +6,64 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-upload:
-    runs-on: windows-latest
+  publish:
+    strategy:
+      matrix:
+        include:
+          - os: windows
+            runner: windows-latest
+            rid: win-x64
+          - os: linux
+            runner: ubuntu-latest
+            rid: linux-x64
+          - os: macos
+            runner: macos-latest
+            rid: osx-x64
+    runs-on: ${{ matrix.runner }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v1
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
 
-      - name: Restore NuGet packages
-        run: nuget restore Subprojects/Sanicball.NonUnity.sln
+      - name: Restore solution
+        run: dotnet restore Subprojects/Sanicball.NonUnity.sln
 
-      - name: Build solution
-        run: msbuild Subprojects/Sanicball.NonUnity.sln /p:Configuration=Release
+      - name: Publish server (self-contained)
+        run: dotnet publish Subprojects/Server/SanicballServer.csproj -c Release -r ${{ matrix.rid }} --self-contained true -o publish/${{ matrix.rid }} --no-restore
 
-      - name: Create ZIP archive
+      - name: Create ZIP archive (Windows)
+        if: matrix.os == 'windows'
+        shell: pwsh
         run: |
-          Compress-Archive -Path "Subprojects/Server/bin/Release/*" -DestinationPath "server.zip"
+          $out = "server-${{ matrix.rid }}.zip"
+          if (Test-Path $out) { Remove-Item $out }
+          Compress-Archive -Path "publish/${{ matrix.rid }}/*" -DestinationPath $out
 
-      # ✅ Always upload as artifact (useful for manual runs)
+      - name: Create ZIP archive (Linux/macOS)
+        if: matrix.os != 'windows'
+        shell: bash
+        run: |
+          OUT=server-${{ matrix.rid }}.zip
+          rm -f "$OUT"
+          cd publish/${{ matrix.rid }}
+          zip -r ../../"$OUT" . > /dev/null
+          cd - > /dev/null
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: server-build
-          path: server.zip
+          name: server-${{ matrix.rid }}
+          path: server-${{ matrix.rid }}.zip
 
-      # ✅ Upload to GitHub Release ONLY when triggered by release
-      - name: Upload to Release
+      - name: Upload to Release (when triggered by release)
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v1
         with:
-          files: server.zip
+          files: server-${{ matrix.rid }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

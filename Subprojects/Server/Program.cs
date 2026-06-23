@@ -46,6 +46,8 @@ namespace SanicballServer
                     };
 
                     Thread inputThread = new Thread(InputLoop);
+                    // Hintergrund-Thread, damit der Prozess beim Beenden nicht blockiert.
+                    inputThread.IsBackground = true;
                     inputThread.Start();
 
 #if DEBUG
@@ -69,8 +71,8 @@ namespace SanicballServer
                     }
 #endif
 
-                    inputThread.Abort();
-                    inputThread.Join();
+                    // Thread abbrechen/Join ist in .NET 6 nicht verfügbar bzw. unsicher.
+                    // Wir verwenden einen Background-Thread und lassen ihn beim Programmende automatisch stoppen.
                 }
             }
 

@@ -1,158 +1,42 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{ED8D5D1E-E70F-4005-A3BA-F03794FF7A40}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <TargetFramework>net8.0</TargetFramework>
     <RootNamespace>SanicballCore</RootNamespace>
     <AssemblyName>SanicballCore</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <!--<TargetFrameworkProfile>Unity Full v3.5</TargetFrameworkProfile>-->
-    <TargetFrameworkProfile />
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>none</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="Lidgren.Network, Version=3.5.1.1679, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="Lidgren.Network">
       <HintPath>..\..\Assets\Assemblies\Lidgren\Lidgren.Network.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Security, Version=4.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\unitybinaries\Mono.Security.dll</HintPath>
-    </Reference>
-    <Reference Include="mscorlib">
-      <HintPath>..\unitybinaries\mscorlib.dll</HintPath>
-    </Reference>
-    <Reference Include="netstandard">
-      <HintPath>..\unitybinaries\netstandard.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\..\Assets\Assemblies\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.ComponentModel.Composition">
-      <HintPath>..\unitybinaries\System.ComponentModel.Composition.dll</HintPath>
+    <!-- Keep Unity and Mono references as assembly references so Unity types are available at compile time. -->
+    <Reference Include="Mono.Security">
+      <HintPath>..\unitybinaries\Mono.Security.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="System.Configuration">
-      <HintPath>..\unitybinaries\System.Configuration.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Core" />
-    <Reference Include="System.Drawing">
-      <HintPath>..\unitybinaries\System.Drawing.dll</HintPath>
-    </Reference>
-    <Reference Include="System.EnterpriseServices">
-      <HintPath>..\unitybinaries\System.EnterpriseServices.dll</HintPath>
-    </Reference>
-    <Reference Include="System.IO.Compression">
-      <HintPath>..\unitybinaries\Sanicball v0.8.2_Data\Managed\System.IO.Compression.dll</HintPath>
-    </Reference>
-    <Reference Include="System.IO.Compression.FileSystem">
-      <HintPath>..\unitybinaries\System.IO.Compression.FileSystem.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Net.Http">
-      <HintPath>..\unitybinaries\System.Net.Http.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Numerics">
-      <HintPath>..\unitybinaries\System.Numerics.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Runtime.Serialization">
-      <HintPath>..\unitybinaries\System.Runtime.Serialization.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Security">
-      <HintPath>..\unitybinaries\System.Security.dll</HintPath>
-    </Reference>
-    <Reference Include="System.ServiceModel.Internals">
-      <HintPath>..\unitybinaries\System.ServiceModel.Internals.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Transactions">
-      <HintPath>..\unitybinaries\System.Transactions.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
     <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\unitybinaries\UnityEngine.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\unitybinaries\UnityEngine.CoreModule.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="ClientInfo.cs" />
-    <Compile Include="Consts.cs" />
-    <Compile Include="ControlType.cs" />
-    <Compile Include="GameVersion.cs" />
-    <Compile Include="MatchMessage.cs" />
-    <Compile Include="MatchMessages\AutoStartTimerMessage.cs" />
-    <Compile Include="MatchMessages\ChangedReadyMessage.cs" />
-    <Compile Include="MatchMessages\CharacterChangedMessage.cs" />
-    <Compile Include="MatchMessages\ChatMessage.cs" />
-    <Compile Include="MatchMessages\CheckpointPassedMessage.cs" />
-    <Compile Include="MatchMessages\ClientJoinedMessage.cs" />
-    <Compile Include="MatchMessages\ClientLeftMessage.cs" />
-    <Compile Include="MatchMessages\DoneRacingMessage.cs" />
-    <Compile Include="MatchMessages\LoadLobbyMessage.cs" />
-    <Compile Include="MatchMessages\LoadRaceMessage.cs" />
-    <Compile Include="MatchMessages\PlayerJoinedMessage.cs" />
-    <Compile Include="MatchMessages\PlayerLeftMessage.cs" />
-    <Compile Include="MatchMessages\RaceFinishedMessage.cs" />
-    <Compile Include="MatchMessages\RaceTimeoutMessage.cs" />
-    <Compile Include="MatchSettings.cs" />
-    <Compile Include="MatchState.cs" />
-    <Compile Include="MessageType.cs" />
-    <Compile Include="Server\Command.cs" />
-    <Compile Include="Server\CommandQueue.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Server\LobbyServerConfig.cs" />
-    <Compile Include="Server\ServClient.cs" />
-    <Compile Include="Server\Server.cs" />
-    <Compile Include="Server\ServerConfig.cs" />
-    <Compile Include="Server\ServerInfo.cs" />
-    <Compile Include="Server\ServPlayer.cs" />
-    <Compile Include="MatchMessages\SettingsChangedMessage.cs" />
-    <Compile Include="MatchMessages\StartRaceMessage.cs" />
-    <Compile Include="Utils.cs" />
-    <Compile Include="CharacterTier.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Mono.Security.dll" />
-    <Content Include="UnityEngine.dll" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>copy "$(TargetPath)" "$(ProjectDir)..\..\Assets\Assemblies"</PostBuildEvent>
-  </PropertyGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
+
+  <!-- Let the SDK include all .cs files implicitly. Explicit Compile entries removed. -->
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ProjectDir)..\..\Assets\Assemblies" SkipUnchangedFiles="true" />
   </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
 </Project>
