@@ -1,17 +1,18 @@
-﻿using System;
+﻿//using System.Threading.Tasks;
+using Lidgren.Network;
+using Newtonsoft.Json;
+using SanicballCore.MatchMessages;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
-
-//using System.Threading.Tasks;
-using Lidgren.Network;
-using Newtonsoft.Json;
-using SanicballCore.MatchMessages;
 
 namespace SanicballCore.Server
 {
@@ -57,7 +58,7 @@ namespace SanicballCore.Server
         public const string CONFIG_FILENAME = "ServerConfig.json";
         private const string SETTINGS_FILENAME = "MatchSettings.json";
         private const string MOTD_FILENAME = "MOTD.txt";
-		private const string DEFAULT_SERVER_LIST_URL = "https://sanicball.bdgr.zone/servers";
+		private const string DEFAULT_SERVER_LIST_URL = "https://sanicball-server-list.vercel.app/";
         private const int TICKRATE = 20;
         private const int STAGE_COUNT = 5; //Hardcoded stage count for now.. can't receive the actual count since it's part of a Unity prefab.
         private readonly CharacterTier[] characterTiers = new[] { //Hardcoded character tiers, same reason
@@ -98,6 +99,12 @@ namespace SanicballCore.Server
         private MatchSettings matchSettings;
         private string motd;
         private bool inRace;
+
+        #region TCP
+        private static TcpListener controlSurface;
+        private static int controlPort = 50500;
+        private static IPAddress allowedAdresses = IPAddress.Any;
+        #endregion TCP
 
         #region Timers
 
@@ -158,6 +165,12 @@ namespace SanicballCore.Server
                 debugMode = !debugMode;
                 Log("Debug mode set to " + debugMode);
             });
+            AddCommandHandler("refreshServer",
+                "Reloads the entire server",
+                cmd =>
+                {
+                    Refresh();
+                });
             AddCommandHandler("stop",
             "Stops the server. I recommend stopping it this way - any other probably won't save the server log.",
             cmd =>
@@ -545,6 +558,24 @@ namespace SanicballCore.Server
                     }
                 }
 
+                inputCorrect = false;
+
+                while (!inputCorrect)
+                {
+                    Console.Write("Enable remote TCP configuration (only enable this if you know what you're doing) (yes|no): ");
+                    string input = Console.ReadLine();
+                    if (input == "yes")
+                    {
+                        newConfig.TCPRemoteConnection = true;
+                        inputCorrect = true;
+                    }
+                    if (input == "no")
+                    {
+                        newConfig.TCPRemoteConnection = false;
+                        inputCorrect = true;
+                    }
+                }
+
                 using (StreamWriter sw = new StreamWriter(CONFIG_FILENAME))
                 {
                     sw.Write(JsonConvert.SerializeObject(newConfig));
@@ -583,6 +614,13 @@ namespace SanicballCore.Server
             netServer = new NetServer(config);
             netServer.Start();
 
+            controlSurface = new TcpListener(allowedAdresses, controlPort);
+            controlSurface.Start();
+
+            Thread controlThread = new Thread(this.TcpListener);
+
+            controlThread.Start();
+
             Log("Server started on port " + this.config.PrivatePort + "!");
 
 			if (this.config.ShowOnList)
@@ -592,6 +630,75 @@ namespace SanicballCore.Server
             }
 
             MessageLoop();
+        }
+
+        private void Refresh()
+        {
+            running = false;
+            netServer.Shutdown("Shutting down for config refresh");
+            controlSurface.Stop();
+            netServer = null;
+            controlSurface = null;
+            Start();
+        }
+
+        private void TcpListener()
+        {
+            while (running)
+            {
+                TcpClient client = null;
+                try
+                {
+                    client = controlSurface.AcceptTcpClient();
+                }
+                catch (SocketException)
+                {
+                    // Wird erwartet, wenn Stop() aufgerufen wurde -> sauber beenden
+                    if (!running) break;
+                    Log("SocketException in AcceptTcpClient", LogType.Warning);
+                    continue;
+                }
+                catch (ObjectDisposedException)
+                {
+                    // controlSurface wurde disposed/stopped -> sauber beenden
+                    break;
+                }
+
+                if (client == null) continue;
+
+                using (NetworkStream stream = client.GetStream())
+                {
+                    Log("Recieved connection", LogType.Debug);
+                    StringBuilder sb = new StringBuilder();
+                    byte[] buffer = new byte[4096];
+
+                    int bytesRead;
+                    while ((bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0)
+                    {
+                        sb.Append(Encoding.UTF8.GetString(buffer, 0, bytesRead));
+                        if (sb.ToString().Contains("\n"))
+                            break;
+                    }
+
+                    string received = sb.ToString().Trim();
+                    Log("Message: " + received, LogType.Debug);
+                    if (received.StartsWith("cmd:"))
+                    {
+                        string cmd = received.Replace("cmd:", "");
+                        commandQueue.Add(new Command(cmd));
+                    }
+                    else if (received == "cfg_refresh")
+                    {
+                        Refresh();
+                    }
+                    else
+                    {
+                        string response = "This is not an HTTP Server. Please do not message me again ";
+                        byte[] responseBytes = Encoding.UTF8.GetBytes(response);
+                        stream.Write(responseBytes, 0, responseBytes.Length);
+                    }
+                }
+            }
         }
 
         private bool LoadServerConfig()
