@@ -637,9 +637,29 @@ namespace SanicballCore.Server
             running = false;
             netServer.Shutdown("Shutting down for config refresh");
             controlSurface.Stop();
+            controlSurface.Server.Close();
             netServer = null;
             controlSurface = null;
             Start();
+        }
+
+        private void StartNetServerWithRetry(NetServer netServer, int retries = 5, int delayMs = 200)
+        {
+            for (int i = 0; i < retries; i++)
+            {
+                try
+                {
+                    netServer.Start();
+                    return; // Erfolg
+                }
+                catch (System.Net.Sockets.SocketException ex)
+                {
+                    Log("Bind failed (attempt " + (i + 1) + "): " + ex.Message, LogType.Warning);
+                    netServer = null;
+                    Thread.Sleep(delayMs);
+                }
+            }
+            throw new Exception("NetServer konnte nicht gebunden werden nach mehreren Versuchen.");
         }
 
         private void TcpListener()
@@ -661,6 +681,12 @@ namespace SanicballCore.Server
                 catch (ObjectDisposedException)
                 {
                     // controlSurface wurde disposed/stopped -> sauber beenden
+                    break;
+                }
+                catch (NullReferenceException)
+                {
+                    // log
+                    Log("TCPServer is null", LogType.Warning);
                     break;
                 }
 
@@ -696,12 +722,15 @@ namespace SanicballCore.Server
                         string response = JsonConvert.SerializeObject(new ServerConfig());
                         byte[] reponseBytes = Encoding.UTF8.GetBytes(response);
                         stream.Write(reponseBytes, 0, reponseBytes.Length);
+                        stream.Write(Encoding.UTF8.GetBytes("\n"), 0, Encoding.UTF8.GetBytes("\n").Length);
+                        stream.Flush();
                     } 
                     else
                     {
                         string response = "This is not an HTTP Server. Please do not message me again or i'll do unspeakable things to you";
                         byte[] responseBytes = Encoding.UTF8.GetBytes(response);
                         stream.Write(responseBytes, 0, responseBytes.Length);
+                        stream.Flush();
                         client.Close();
                     }
                 }
