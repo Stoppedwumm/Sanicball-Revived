@@ -13,5 +13,6 @@ namespace SanicballCore.Server
         public string PublicIP { get; set; }
         public int PublicPort { get; set; }
         public int MaxPlayers { get; set; }
+        public bool TCPRemoteConnection { get; set; }
     }
 }
