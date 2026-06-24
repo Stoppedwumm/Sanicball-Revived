@@ -58,7 +58,7 @@ namespace SanicballCore.Server
         public const string CONFIG_FILENAME = "ServerConfig.json";
         private const string SETTINGS_FILENAME = "MatchSettings.json";
         private const string MOTD_FILENAME = "MOTD.txt";
-		private const string DEFAULT_SERVER_LIST_URL = "https://sanicball-server-list.vercel.app/";
+		private const string DEFAULT_SERVER_LIST_URL = "https://sanicball-server-list.vercel.app";
         private const int TICKRATE = 20;
         private const int STAGE_COUNT = 5; //Hardcoded stage count for now.. can't receive the actual count since it's part of a Unity prefab.
         private readonly CharacterTier[] characterTiers = new[] { //Hardcoded character tiers, same reason
@@ -641,25 +641,6 @@ namespace SanicballCore.Server
             netServer = null;
             controlSurface = null;
             Start();
-        }
-
-        private void StartNetServerWithRetry(NetServer netServer, int retries = 5, int delayMs = 200)
-        {
-            for (int i = 0; i < retries; i++)
-            {
-                try
-                {
-                    netServer.Start();
-                    return; // Erfolg
-                }
-                catch (System.Net.Sockets.SocketException ex)
-                {
-                    Log("Bind failed (attempt " + (i + 1) + "): " + ex.Message, LogType.Warning);
-                    netServer = null;
-                    Thread.Sleep(delayMs);
-                }
-            }
-            throw new Exception("NetServer konnte nicht gebunden werden nach mehreren Versuchen.");
         }
 
         private void TcpListener()
