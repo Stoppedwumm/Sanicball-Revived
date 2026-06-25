@@ -1,6 +1,7 @@
 ﻿using Lidgren.Network;
 using SanicballCore;
 using UnityEngine;
+using SanicballCore.Server;
 
 namespace Sanicball.Logic
 {
