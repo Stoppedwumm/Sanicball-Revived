@@ -621,6 +621,9 @@ namespace SanicballCore.Server
 #if DEBUG
             debugMode = true;
 #endif
+            Log("Version:");
+            Log(GameVersion.AS_STRING);
+            Log(GameVersion.TAGLINE);
 
             NetPeerConfiguration config = new NetPeerConfiguration(Consts.APP_ID);
             config.Port = this.config.PrivatePort;
