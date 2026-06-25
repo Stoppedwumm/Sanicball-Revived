@@ -100,11 +100,15 @@ namespace Sanicball.UI
 
         public void QuitMatch()
         {
+            StartCoroutine(QuitMatchInternal());
+        }
+        private IEnumerator QuitMatchInternal() 
+        {
             Debug.Log("Quit button pressed");
             if (UnityServerConsole.Instance.isHost)
             {
                 Debug.Log("Host!");
-                UnityServerConsole.Instance.Shutdown();
+                yield return UnityServerConsole.Instance.Shutdown();
             } else {
                 Debug.Log("Not host!");
             }

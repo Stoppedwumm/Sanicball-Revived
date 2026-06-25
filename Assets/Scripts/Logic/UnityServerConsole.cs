@@ -64,10 +64,14 @@ namespace Sanicball.Logic
             }
         }
 
-        public void Shutdown()
+        public IEnumerator Shutdown()
         {
             Debug.Log("[Server] Shutting down local server...");
-            serverThread.Abort();
+            commandQueue.Add(new Command("stop"));
+            yield return new WaitForSeconds(2f);
+            if (serverThread != null && serverThread.IsAlive) {
+                serverThread.Abort();
+            }
             isRunning = false;
             Instance = null;
             Debug.Log("[Server] Should be shut down");
@@ -77,7 +81,7 @@ namespace Sanicball.Logic
         public static void Stop() {
             Debug.Log("UnityServerConsole.Stop() called");
             if (Instance == null) Debug.LogWarning("Got Stop even though there is no server");
-            if (Instance != null) Instance.Shutdown();
+            if (Instance != null) Instance.StartCoroutine(Instance.Shutdown());
         }
     }
 }
