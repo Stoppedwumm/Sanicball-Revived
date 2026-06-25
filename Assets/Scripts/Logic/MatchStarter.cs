@@ -2,6 +2,7 @@
 using SanicballCore;
 using UnityEngine;
 using SanicballCore.Server;
+using System.Collections;
 
 namespace Sanicball.Logic
 {
@@ -9,101 +10,81 @@ namespace Sanicball.Logic
     {
         public const string APP_ID = "Sanicball";
 
-        [SerializeField]
-        private MatchManager matchManagerPrefab = null;
-        [SerializeField]
-        private UI.Popup connectingPopupPrefab = null;
-        [SerializeField]
-        private UI.PopupHandler popupHandler = null;
+        [SerializeField] private MatchManager matchManagerPrefab = null;
+        [SerializeField] private UI.Popup connectingPopupPrefab = null;
+        [SerializeField] private UI.PopupHandler popupHandler = null;
 
         private UI.PopupConnecting activeConnectingPopup;
-
-        //NetClient for when joining online matches
         private NetClient joiningClient;
+        
+        // Made static so it survives scene changes even if this script's object is destroyed
+        private static UnityServerConsole localServerConsole;
 
         private void Update()
         {
             if (joiningClient != null)
             {
                 NetIncomingMessage msg;
-                while ((msg = joiningClient.ReadMessage()) != null)
+                while (joiningClient != null && (msg = joiningClient.ReadMessage()) != null)
                 {
-                    switch (msg.MessageType)
-                    {
-                        case NetIncomingMessageType.DebugMessage:
-                        case NetIncomingMessageType.VerboseDebugMessage:
-                            Debug.Log(msg.ReadString());
-                            break;
-
-                        case NetIncomingMessageType.WarningMessage:
-                            Debug.LogWarning(msg.ReadString());
-                            break;
-
-                        case NetIncomingMessageType.ErrorMessage:
-                            Debug.LogError(msg.ReadString());
-                            break;
-
-                        case NetIncomingMessageType.StatusChanged:
-                            NetConnectionStatus status = (NetConnectionStatus)msg.ReadByte();
-
-                            switch (status)
-                            {
-                                case NetConnectionStatus.Connected:
-                                    Debug.Log("Connected! Now waiting for match state");
-                                    activeConnectingPopup.ShowMessage("Receiving match state...");
-                                    break;
-
-                                case NetConnectionStatus.Disconnected:
-                                    activeConnectingPopup.ShowMessage(msg.ReadString());
-                                    break;
-
-                                default:
-                                    string statusMsg = msg.ReadString();
-                                    Debug.Log("Status change received: " + status + " - Message: " + statusMsg);
-                                    break;
-                            }
-                            break;
-
-                        case NetIncomingMessageType.Data:
-                            byte type = msg.ReadByte();
-                            if (type == MessageType.InitMessage)
-                            {
-                                try
-                                {
-                                    MatchState matchInfo = MatchState.ReadFromMessage(msg);
-                                    BeginOnlineGame(matchInfo);
-                                }
-                                catch (System.Exception ex)
-                                {
-                                    activeConnectingPopup.ShowMessage("Failed to read match message - cannot join server!");
-                                    Debug.LogError("Could not read match state, error: " + ex.Message);
-                                }
-
-                                /*string matchStateStr = "";
-                                try
-                                {
-                                    matchStateStr = msg.ReadString();
-                                    MatchState matchInfo = Newtonsoft.Json.JsonConvert.DeserializeObject<MatchState>(matchStateStr);
-                                    BeginOnlineGame(matchInfo);
-                                }
-                                catch (Newtonsoft.Json.JsonException ex)
-                                {
-                                    activeConnectingPopup.ShowMessage("Failed to read match state - cannot join server!");
-                                    joiningClient.Disconnect("Failed to read match state");
-                                    Debug.LogError("Could not read match state, error: " + ex.Message);
-                                    Debug.LogError("Full message: " + matchStateStr);
-                                }*/
-                            }
-                            break;
-                    }
+                    HandleNetworkMessage(msg);
                 }
-                if (Input.GetKeyDown(KeyCode.Escape))
+
+                if (joiningClient != null && Input.GetKeyDown(KeyCode.Escape))
                 {
-                    popupHandler.CloseActivePopup();
-                    joiningClient.Disconnect("Cancelled");
-                    joiningClient = null;
+                    CancelJoining();
                 }
             }
+        }
+
+        private void HandleNetworkMessage(NetIncomingMessage msg)
+        {
+            switch (msg.MessageType)
+            {
+                case NetIncomingMessageType.DebugMessage:
+                case NetIncomingMessageType.VerboseDebugMessage:
+                    Debug.Log(msg.ReadString());
+                    break;
+                case NetIncomingMessageType.WarningMessage:
+                    Debug.LogWarning(msg.ReadString());
+                    break;
+                case NetIncomingMessageType.ErrorMessage:
+                    Debug.LogError(msg.ReadString());
+                    break;
+                case NetIncomingMessageType.StatusChanged:
+                    NetConnectionStatus status = (NetConnectionStatus)msg.ReadByte();
+                    string statusMsg = msg.ReadString();
+                    HandleStatusChange(status, statusMsg);
+                    break;
+                case NetIncomingMessageType.Data:
+                    if (msg.ReadByte() == MessageType.InitMessage)
+                    {
+                        try
+                        {
+                            MatchState matchInfo = MatchState.ReadFromMessage(msg);
+                            BeginOnlineGame(matchInfo);
+                        }
+                        catch (System.Exception ex)
+                        {
+                            activeConnectingPopup?.ShowMessage("Failed to read match state!");
+                            Debug.LogError("Match state read error: " + ex.Message);
+                        }
+                    }
+                    break;
+            }
+        }
+
+        private void HandleStatusChange(NetConnectionStatus status, string message)
+        {
+            if (status == NetConnectionStatus.Connected)
+                activeConnectingPopup?.ShowMessage("Receiving match state...");
+            else if (status == NetConnectionStatus.Disconnected)
+                activeConnectingPopup?.ShowMessage(message);
+        }
+
+        public void StartLocalNetworkGame(string name)
+        {
+            StartCoroutine(StartLocalNetworkGameRoutine(name));
         }
 
         public void BeginLocalGame()
@@ -112,23 +93,22 @@ namespace Sanicball.Logic
             manager.InitLocalMatch();
         }
 
+        private IEnumerator StartLocalNetworkGameRoutine(string name)
+        {
+            // Shutdown existing server if one is somehow still running
+            if (localServerConsole != null) localServerConsole.Shutdown();
+
+            localServerConsole = new UnityServerConsole();
+            localServerConsole.StartServer(name);
+
+            yield return new WaitForSeconds(2f);
+
+            JoinOnlineGame("127.0.0.1", 25000);
+        }
+
         public void JoinOnlineGame(string ip = "127.0.0.1", int port = 25000)
         {
             JoinOnlineGame(new System.Net.IPEndPoint(System.Net.IPAddress.Parse(ip), port));
-        }
-
-        public void StartLocalNetworkGame(string name)
-        {
-            Server localServer = new Server();
-            Thread t = new Thread(() => localServer.Start(), true, "Local Server")
-            t.Start();
-            yield return new WaitForSeconds(2);
-            JoinOnlineGame();
-        }
-
-        private void SpinUpServer(Server serverToStart)
-        {
-            serverToStart.Start();
         }
 
         public void JoinOnlineGame(System.Net.IPEndPoint endpoint)
@@ -137,24 +117,46 @@ namespace Sanicball.Logic
             joiningClient = new NetClient(conf);
             joiningClient.Start();
 
-            //Create approval message
             NetOutgoingMessage approval = joiningClient.CreateMessage();
-
             ClientInfo info = new ClientInfo(GameVersion.AS_FLOAT, GameVersion.IS_TESTING);
             approval.Write(Newtonsoft.Json.JsonConvert.SerializeObject(info));
 
             joiningClient.Connect(endpoint, approval);
 
             popupHandler.OpenPopup(connectingPopupPrefab);
-
             activeConnectingPopup = FindObjectOfType<UI.PopupConnecting>();
         }
 
-        //Called when succesfully connected to a server
         private void BeginOnlineGame(MatchState matchState)
         {
+            Debug.Log("Transitioning to MatchManager...");
             MatchManager manager = Instantiate(matchManagerPrefab);
             manager.InitOnlineMatch(joiningClient, matchState);
+            joiningClient = null; 
+        }
+
+        private void CancelJoining()
+        {
+            popupHandler.CloseActivePopup();
+            joiningClient?.Disconnect("Cancelled");
+            joiningClient = null;
+            
+            // If we cancel joining, we should probably stop the local server too
+            if (localServerConsole != null) {
+                localServerConsole.Shutdown();
+                localServerConsole = null;
+            }
+        }
+
+        // OnApplicationQuit is much safer for local servers than OnDestroy
+        private void OnApplicationQuit()
+        {
+            if (localServerConsole != null)
+            {
+                Debug.Log("Closing local server due to application quit.");
+                localServerConsole.Shutdown();
+                localServerConsole = null;
+            }
         }
     }
 }

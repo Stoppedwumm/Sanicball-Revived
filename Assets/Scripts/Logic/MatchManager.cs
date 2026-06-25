@@ -444,6 +444,7 @@ namespace Sanicball.Logic
 
         public void OnDestroy()
         {
+            UnityServerConsole.Stop();
             messenger.Close();
             if (activeChat)
                 Destroy(activeChat.gameObject);

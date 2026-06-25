@@ -33,16 +33,17 @@ namespace Sanicball.UI
         }
 
         public void Join()
-        {
-            MatchStarter starter = FindObjectOfType<MatchStarter>();
-            if (starter)
-            {
-                starter.JoinOnlineGame(endpoint);
-            }
-            else
-            {
-                Debug.LogError("No match starter found");
-            }
-        }
+{
+    MatchStarter starter = FindObjectOfType<MatchStarter>();
+    if (starter)
+    {
+        // Convert the endpoint address to string and pass the port separately
+        starter.JoinOnlineGame(endpoint.Address.ToString(), endpoint.Port);
+    }
+    else
+    {
+        Debug.LogError("No match starter found");
+    }
+}
     }
 }
