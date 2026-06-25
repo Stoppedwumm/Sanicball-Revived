@@ -6,7 +6,7 @@
         public const float AS_FLOAT = 0.100f;
 
         //To differentiate between testing builds and release builds
-        public const bool IS_TESTING = false;
+        public const bool IS_TESTING = true;
 
         //As a string, for displaying on the UI
         public const string AS_STRING = "alpha-revived v0.10.0";
