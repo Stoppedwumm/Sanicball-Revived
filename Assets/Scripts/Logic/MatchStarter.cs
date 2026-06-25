@@ -119,7 +119,16 @@ namespace Sanicball.Logic
 
         public void StartLocalNetworkGame(string name)
         {
+            Server localServer = new Server();
+            Thread t = new Thread(() => localServer.Start(), true, "Local Server")
+            t.Start();
+            yield return new WaitForSeconds(2);
+            JoinOnlineGame();
+        }
 
+        private void SpinUpServer(Server serverToStart)
+        {
+            serverToStart.Start();
         }
 
         public void JoinOnlineGame(System.Net.IPEndPoint endpoint)
