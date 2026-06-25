@@ -130,7 +130,7 @@ namespace SanicballCore.Server
 
         public bool Running { get { return running; } }
 
-        public Server(CommandQueue commandQueue)
+        public Server(CommandQueue commandQueue, bool skipWizard = false, string serverName = "")
         {
             this.commandQueue = commandQueue;
 
@@ -455,7 +455,7 @@ namespace SanicballCore.Server
 
             #region Server config wizard
 
-            if (!File.Exists(CONFIG_FILENAME))
+            if (!File.Exists(CONFIG_FILENAME) && !skipWizard)
             {
                 Console.WriteLine("No server configuration (" + CONFIG_FILENAME + ") found. ");
 
@@ -582,7 +582,24 @@ namespace SanicballCore.Server
                     Console.WriteLine("Config saved! If you want to modify match settings, this is done using the commands listed when entering 'help'.");
                 }
 
-                #endregion Server config wizard
+                
+            }
+            #endregion Server config wizard
+
+            if (skipWizard)
+            {
+                // logic for local network unity game servers
+                ServerConfig newConfig = new ServerConfig();
+                // default network settings
+                newConfig.ServerName = serverName;
+                newConfig.ShowOnList = false;
+                newConfig.PrivatePort = 25000;
+                newConfig.MaxPlayers = 64;
+                newConfig.TCPRemoteConnection = false;
+                using (StreamWriter sw = new StreamWriter(CONFIG_FILENAME))
+                {
+                    sw.Write(JsonConvert.SerializeObject(newConfig));
+                }
             }
         }
 
