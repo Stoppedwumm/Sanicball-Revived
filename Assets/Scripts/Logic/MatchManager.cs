@@ -8,6 +8,7 @@ using Sanicball.UI;
 using SanicballCore;
 using SanicballCore.MatchMessages;
 using UnityEngine;
+using SanicballCore.Server;
 
 namespace Sanicball.Logic
 {
@@ -374,6 +375,15 @@ namespace Sanicball.Logic
         {
             MatchClient myClient = clients.FirstOrDefault(a => a.Guid == myGuid);
             messenger.SendMessage(new ChatMessage(myClient.Name, ChatMessageType.User, args.Text));
+            char slash = '/';
+            if (UnityServerConsole.Instance.isHost)
+            {
+                if (args.Text.StartsWith("/")) {
+                    string actualCommand = args.Text.TrimStart(slash);
+                    Command newCmd = new Command(actualCommand);
+                    UnityServerConsole.Instance.Add(newCmd);
+                }
+            }
         }
 
         private void OnlinePlayerMovement(object sender, PlayerMovementArgs e)
@@ -444,7 +454,6 @@ namespace Sanicball.Logic
 
         public void OnDestroy()
         {
-            UnityServerConsole.Stop();
             messenger.Close();
             if (activeChat)
                 Destroy(activeChat.gameObject);
@@ -545,6 +554,7 @@ namespace Sanicball.Logic
 
         private IEnumerator QuitMatchInternal(string reason)
         {
+
             UnityEngine.SceneManagement.SceneManager.LoadScene("Menu");
 
             if (reason != null)

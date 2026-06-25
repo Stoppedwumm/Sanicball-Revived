@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.Collections;
 
 namespace Sanicball.UI
 {
@@ -99,6 +100,14 @@ namespace Sanicball.UI
 
         public void QuitMatch()
         {
+            Debug.Log("Quit button pressed");
+            if (UnityServerConsole.Instance.isHost)
+            {
+                Debug.Log("Host!");
+                UnityServerConsole.Instance.Shutdown();
+            } else {
+                Debug.Log("Not host!");
+            }
             var matchManager = FindObjectOfType<MatchManager>();
             if (matchManager)
             {

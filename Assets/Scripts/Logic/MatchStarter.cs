@@ -3,6 +3,7 @@ using SanicballCore;
 using UnityEngine;
 using SanicballCore.Server;
 using System.Collections;
+using Sanicball.Data;
 
 namespace Sanicball.Logic
 {
@@ -82,9 +83,9 @@ namespace Sanicball.Logic
                 activeConnectingPopup?.ShowMessage(message);
         }
 
-        public void StartLocalNetworkGame(string name)
+        public void StartLocalNetworkGame()
         {
-            StartCoroutine(StartLocalNetworkGameRoutine(name));
+            StartCoroutine(StartLocalNetworkGameRoutine(ActiveData.GameSettings.nickname + "'s Game"));
         }
 
         public void BeginLocalGame()

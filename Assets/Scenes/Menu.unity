@@ -13527,7 +13527,7 @@ MonoBehaviour:
       - m_Target: {fileID: 1114309120}
         m_TargetAssemblyTypeName: Sanicball.Logic.MatchStarter, Assembly-CSharp
         m_MethodName: StartLocalNetworkGame
-        m_Mode: 5
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine

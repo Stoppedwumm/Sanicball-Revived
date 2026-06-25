@@ -143,3 +143,15 @@ InitTestScene*.unity*
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
+
+windows.zip
+mac.zip
+mac.app
+windows/
+sball.app
+sball/
+sball.zip
+
+ServerConfig.json
+MatchSettings.json
+

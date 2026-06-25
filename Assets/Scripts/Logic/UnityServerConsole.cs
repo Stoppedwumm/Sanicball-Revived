@@ -2,10 +2,13 @@ using UnityEngine;
 using System;
 using System.Threading;
 using SanicballCore.Server;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace Sanicball.Logic
 {
-    public class UnityServerConsole
+    public class UnityServerConsole : MonoBehaviour
     {
         private Server server;
         private CommandQueue commandQueue;
@@ -15,6 +18,7 @@ namespace Sanicball.Logic
         // Static reference so we can stop it from anywhere
         public static UnityServerConsole Instance { get; private set; }
         public bool IsRunning => isRunning;
+        public bool isHost = false;
 
         public void StartServer(string serverName)
         {
@@ -35,9 +39,15 @@ namespace Sanicball.Logic
             };
 
             isRunning = true;
+            Instance.isHost = true;
             serverThread = new Thread(RunServerInternal);
             serverThread.IsBackground = true;
             serverThread.Start();
+        }
+
+        public void Add(Command cmd)
+        {
+            commandQueue.Add(cmd);
         }
 
         private void RunServerInternal()
@@ -50,24 +60,23 @@ namespace Sanicball.Logic
                 Debug.LogError($"[Server Thread Exception] {ex.Message}");
             } finally {
                 isRunning = false;
+                isHost = false;
             }
         }
 
         public void Shutdown()
         {
             Debug.Log("[Server] Shutting down local server...");
-            if (server != null) {
-                server.Dispose();
-            }
-            if (serverThread != null && serverThread.IsAlive) {
-                serverThread.Abort();
-            }
+            serverThread.Abort();
             isRunning = false;
             Instance = null;
+            Debug.Log("[Server] Should be shut down");
         }
 
         // Static helper to stop the server from any other script
         public static void Stop() {
+            Debug.Log("UnityServerConsole.Stop() called");
+            if (Instance == null) Debug.LogWarning("Got Stop even though there is no server");
             if (Instance != null) Instance.Shutdown();
         }
     }
