@@ -653,6 +653,7 @@ namespace SanicballCore.Server
             }
 
             MessageLoop();
+			Dispose();
         }
 
         private void Refresh()
