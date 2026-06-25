@@ -2,7 +2,7 @@ name: Build Server and Upload
 
 on:
   release:
-    types: [published]
+    types: [published, created]
   workflow_dispatch:
 
 jobs:
