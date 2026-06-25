@@ -11,7 +11,7 @@
         //As a string, for displaying on the UI
         public const string AS_STRING = "alpha-revived debug build";
         //Something stupid, usually unique for every version
-        public const string TAGLINE = "building from bleeding aren't we";
+        public const string TAGLINE = "building from bleeding aren't we?";
 #else
         //As a string, for displaying on the UI
         public const string AS_STRING = "alpha-revived 0.10.1";

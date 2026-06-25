@@ -99,6 +99,7 @@ namespace SanicballCore.Server
         private MatchSettings matchSettings;
         private string motd;
         private bool inRace;
+        private string predefinedMOTD;
 
         #region TCP
         private static TcpListener controlSurface;
@@ -130,7 +131,7 @@ namespace SanicballCore.Server
 
         public bool Running { get { return running; } }
 
-        public Server(CommandQueue commandQueue, bool skipWizard = false, string serverName = "")
+        public Server(CommandQueue commandQueue, bool skipWizard = false, string serverName = "", string preMOTD = "")
         {
             this.commandQueue = commandQueue;
 
@@ -586,6 +587,8 @@ namespace SanicballCore.Server
             }
             #endregion Server config wizard
 
+            predefinedMOTD = preMOTD;
+
             if (skipWizard)
             {
                 // logic for local network unity game servers
@@ -789,6 +792,11 @@ namespace SanicballCore.Server
         }
 
         private void LoadMOTD(string path = MOTD_FILENAME) {
+            if (predefinedMOTD != String.Empty)
+            {
+                motd = predefinedMOTD;
+                return;
+            }
             if (File.Exists(path))
             {
                 using (StreamReader sr = new StreamReader(path))
