@@ -116,6 +116,11 @@ namespace Sanicball.Logic
             JoinOnlineGame(new System.Net.IPEndPoint(System.Net.IPAddress.Parse(ip), port));
         }
 
+        public void StartLocalNetworkGame(string name)
+        {
+
+        }
+
         public void JoinOnlineGame(System.Net.IPEndPoint endpoint)
         {
             NetPeerConfiguration conf = new NetPeerConfiguration(APP_ID);
