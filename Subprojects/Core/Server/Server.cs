@@ -1700,6 +1700,8 @@ namespace SanicballCore.Server
 
             if (netServer != null)
                 netServer.Shutdown("Server was closed.");
+			controlSurface.Stop();
+            controlSurface.Server.Close();
             Log("The server has been closed.");
 
             //Write server log
