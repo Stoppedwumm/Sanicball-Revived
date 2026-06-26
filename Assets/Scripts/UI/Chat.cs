@@ -40,6 +40,8 @@ namespace Sanicball.UI
         private CanvasGroup canvasGroup;
         private float visibleTime = 0;
 
+        public static Chat INSTANCE;
+
         public event System.EventHandler<ChatMessageArgs> MessageSent;
 
         private void Start()
@@ -47,6 +49,7 @@ namespace Sanicball.UI
             DontDestroyOnLoad(gameObject);
             canvasGroup = GetComponent<CanvasGroup>();
             canvasGroup.alpha = 0;
+            INSTANCE = this;
         }
 
         public void Update()
