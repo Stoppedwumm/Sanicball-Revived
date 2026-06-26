@@ -2,24 +2,25 @@ name: Add NCS Music
 
 on:
   issues:
-    types: [opened, labeled]
+    types: [labeled]
 
 concurrency:
   group: music-${{ github.event.issue.number }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   add-music:
-    # Only run when the issue has BOTH the "Music" and "New Content" labels
+    # Only run when the triggering label completes the Music + New Content pair
     if: |
+      (github.event.label.name == 'Music' || github.event.label.name == 'New Content') &&
       contains(github.event.issue.labels.*.name, 'Music') &&
-      contains(github.event.issue.labels.*.name, 'New Content')
+      contains(github.event.issue.labels.*.name, 'New Content') &&
+      !contains(github.event.issue.labels.*.name, 'Content Review Ready')
     runs-on: ubuntu-latest
 
     permissions:
       issues: write
       contents: write
-    
 
     steps:
       - name: Checkout repository
@@ -39,16 +40,14 @@ jobs:
         env:
           ISSUE_BODY: ${{ github.event.issue.body }}
         run: |
-          # Extract all ncs.io track links from the issue body
-          LINKS=$(echo "$ISSUE_BODY" | grep -oP 'https?://ncs\.io/[^\s\)\"]+' | sort -u | tr '\n' ' ')
+          LINKS=$(echo "$ISSUE_BODY" | grep -oP 'https?://ncs\.io/[^\s\)\"]+' | sort -u)
 
           if [ -z "$LINKS" ]; then
             echo "found=false" >> $GITHUB_OUTPUT
           else
             echo "found=true" >> $GITHUB_OUTPUT
-            # Store as newline-delimited for the loop
             echo "links<<EOF" >> $GITHUB_OUTPUT
-            echo "$ISSUE_BODY" | grep -oP 'https?://ncs\.io/[^\s\)\"]+' | sort -u >> $GITHUB_OUTPUT
+            echo "$LINKS" >> $GITHUB_OUTPUT
             echo "EOF" >> $GITHUB_OUTPUT
           fi
 
@@ -80,7 +79,6 @@ jobs:
             OUTPUT=$(node AddMusic.js "$LINK" 2>&1)
             EXIT_CODE=$?
 
-            # Append result with link and output
             ENTRY=$(jq -n \
               --arg link "$LINK" \
               --arg output "$OUTPUT" \
@@ -90,9 +88,7 @@ jobs:
             RESULTS=$(echo "$RESULTS" | jq --argjson e "$ENTRY" '. + [$e]')
           done <<< "$LINKS"
 
-          # Save to file to pass to next step (avoids env var size limits)
           echo "$RESULTS" > /tmp/music_results.json
-          echo "Finished processing all links."
 
       - name: Post summary comment
         if: steps.extract.outputs.found == 'true'
@@ -147,4 +143,16 @@ jobs:
               repo: context.repo.repo,
               issue_number: context.issue.number,
               body
+            });
+
+      - name: Add "Content Review Ready" label
+        if: steps.extract.outputs.found == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['Content Review Ready']
             });
