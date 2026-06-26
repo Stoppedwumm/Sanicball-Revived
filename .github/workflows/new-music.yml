@@ -1,0 +1,145 @@
+name: Add NCS Music
+
+on:
+  issues:
+    types: [opened, labeled]
+
+jobs:
+  add-music:
+    # Only run when the issue has BOTH the "Music" and "New Content" labels
+    if: |
+      contains(github.event.issue.labels.*.name, 'Music') &&
+      contains(github.event.issue.labels.*.name, 'New Content')
+    runs-on: ubuntu-latest
+
+    permissions:
+      issues: write
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: WorkflowScripts
+        run: npm i
+
+      - name: Extract NCS links from issue body
+        id: extract
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          # Extract all ncs.io track links from the issue body
+          LINKS=$(echo "$ISSUE_BODY" | grep -oP 'https?://ncs\.io/[^\s\)\"]+' | sort -u | tr '\n' ' ')
+
+          if [ -z "$LINKS" ]; then
+            echo "found=false" >> $GITHUB_OUTPUT
+          else
+            echo "found=true" >> $GITHUB_OUTPUT
+            # Store as newline-delimited for the loop
+            echo "links<<EOF" >> $GITHUB_OUTPUT
+            echo "$ISSUE_BODY" | grep -oP 'https?://ncs\.io/[^\s\)\"]+' | sort -u >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Comment if no NCS links found
+        if: steps.extract.outputs.found == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `## ⚠️ No NCS Links Found\n\nThis issue is tagged **Music** and **New Content**, but no \`ncs.io\` links were found in the issue body.\n\nPlease add a link in the format: \`https://ncs.io/TrackName\``
+            });
+
+      - name: Process each NCS link
+        if: steps.extract.outputs.found == 'true'
+        id: process
+        working-directory: WorkflowScripts
+        env:
+          LINKS: ${{ steps.extract.outputs.links }}
+        run: |
+          RESULTS="[]"
+
+          while IFS= read -r LINK; do
+            [ -z "$LINK" ] && continue
+            echo "Processing: $LINK"
+
+            OUTPUT=$(node AddMusic.js "$LINK" 2>&1)
+            EXIT_CODE=$?
+
+            # Append result with link and output
+            ENTRY=$(jq -n \
+              --arg link "$LINK" \
+              --arg output "$OUTPUT" \
+              --argjson ok "$( [ $EXIT_CODE -eq 0 ] && echo true || echo false )" \
+              '{link: $link, output: $output, ok: $ok}')
+
+            RESULTS=$(echo "$RESULTS" | jq --argjson e "$ENTRY" '. + [$e]')
+          done <<< "$LINKS"
+
+          # Save to file to pass to next step (avoids env var size limits)
+          echo "$RESULTS" > /tmp/music_results.json
+          echo "Finished processing all links."
+
+      - name: Post summary comment
+        if: steps.extract.outputs.found == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const results = JSON.parse(fs.readFileSync('/tmp/music_results.json', 'utf8'));
+
+            let body = `## 🎵 Music Addition Summary\n\n`;
+            body += `Processed **${results.length}** track(s) from this issue.\n\n---\n\n`;
+
+            for (const result of results) {
+              if (!result.ok) {
+                body += `### ❌ Failed: \`${result.link}\`\n`;
+                body += `\`\`\`\n${result.output}\n\`\`\`\n\n`;
+                continue;
+              }
+
+              let track;
+              try {
+                track = JSON.parse(result.output);
+              } catch {
+                body += `### ⚠️ Unexpected output for \`${result.link}\`\n`;
+                body += `\`\`\`\n${result.output}\n\`\`\`\n\n`;
+                continue;
+              }
+
+              const artists = track.artists?.map(a => a.name).join(', ') ?? 'Unknown';
+              const tags    = track.tags?.map(t => `\`${t.name}\``).join(' ') ?? 'None';
+              const date    = track.date ? new Date(track.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Unknown';
+
+              body += `### ✅ ${track.name}\n`;
+              if (track.coverUrl) {
+                body += `<img src="${track.coverUrl}" alt="Cover art" width="120" align="right"/>\n\n`;
+              }
+              body += `| Field | Value |\n|---|---|\n`;
+              body += `| 🎤 Artists | ${artists} |\n`;
+              body += `| 🎸 Genre | ${track.genre ?? 'Unknown'} |\n`;
+              body += `| 📅 Released | ${date} |\n`;
+              body += `| 🏷️ Mood Tags | ${tags} |\n`;
+              body += `| 🔗 NCS Link | [${track.name}](https://ncs.io${track.url}) |\n`;
+              body += `| ⬇️ Download | [Regular](${track.download?.regular}) |\n`;
+              body += `| 🎧 Preview | [Listen](${track.previewUrl}) |\n`;
+              body += `\n`;
+            }
+
+            body += `---\n*Triggered by issue #${context.issue.number} · [View run](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})*`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body
+            });
