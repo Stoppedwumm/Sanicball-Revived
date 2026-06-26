@@ -4,12 +4,14 @@ using SanicballCore.MatchMessages;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using Sanicball.Logic;
 
 namespace Sanicball.UI
 {
     public class ChatMessageArgs : System.EventArgs
     {
         public string Text { get; private set; }
+
 
         public ChatMessageArgs(string text)
         {
@@ -40,20 +42,31 @@ namespace Sanicball.UI
         private CanvasGroup canvasGroup;
         private float visibleTime = 0;
 
-        public static Chat INSTANCE;
+        public static Chat Instance;
 
         public event System.EventHandler<ChatMessageArgs> MessageSent;
 
         private void Start()
         {
-            DontDestroyOnLoad(gameObject);
             canvasGroup = GetComponent<CanvasGroup>();
             canvasGroup.alpha = 0;
-            INSTANCE = this;
+        }
+
+        private void Awake()
+        {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
         }
 
         public void Update()
         {
+            UnityServerConsole.Instance?.Update();
             EventSystem es = EventSystem.current;
             if (GameInput.IsOpeningChat())
             {
@@ -71,7 +84,10 @@ namespace Sanicball.UI
                     SendMessage();
             }
 
-            if (Input.mousePosition.x < hoverArea.sizeDelta.x && Input.mousePosition.y < hoverArea.sizeDelta.y)
+            if (
+                Input.mousePosition.x < hoverArea.sizeDelta.x
+                && Input.mousePosition.y < hoverArea.sizeDelta.y
+            )
             {
                 visibleTime = MAX_VISIBLE_TIME;
             }
@@ -104,7 +120,11 @@ namespace Sanicball.UI
             switch (type)
             {
                 case ChatMessageType.User:
-                    messageObj.text = string.Format("<color=#6688ff><b>{0}</b></color>: {1}", from, text);
+                    messageObj.text = string.Format(
+                        "<color=#6688ff><b>{0}</b></color>: {1}",
+                        from,
+                        text
+                    );
                     break;
 
                 case ChatMessageType.System:
