@@ -27,7 +27,7 @@ namespace Sanicball.Logic
 
             commandQueue = new CommandQueue();
             string dataPath = Application.persistentDataPath;
-            server = new Server(commandQueue, true, serverName, dataPath);
+            server = new Server(commandQueue, true, serverName, "Local LAN Server");
 
             server.OnLog += (sender, e) => {
                 string msg = $"[Server] {e.Entry.Message}";
