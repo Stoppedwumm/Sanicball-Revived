@@ -4,6 +4,10 @@ on:
   issues:
     types: [opened, labeled]
 
+concurrency:
+  group: music-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
 jobs:
   add-music:
     # Only run when the issue has BOTH the "Music" and "New Content" labels
@@ -15,6 +19,7 @@ jobs:
     permissions:
       issues: write
       contents: write
+    
 
     steps:
       - name: Checkout repository
