@@ -10,3 +10,7 @@ Sanicball was originally created by BK-TN (now [Badgerson](https://badgerson.com
 ## Copyright notice
 
 The MIT license covers all source code and any original assets created by BK-TN (now [Badgerson](https://badgerson.com/)) and Stoppedwumm. Sanicball contains images created by third parties and used without permission by original authors. By distributing these assets you acknowledge the legal risk involved. Furthermore, I do not recommend or condone selling the game or making money off of it in any way.
+
+*Latest as in 2010
+
+(The game has it's own wiki: <https://sanic-ball.fandom.com/wiki/Sanicball>)
