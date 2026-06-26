@@ -26,16 +26,37 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Check for "Content Review Ready" label
+        id: label_check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+            const hasLabel = issue.data.labels.some(l => l.name === 'Content Review Ready');
+            if (hasLabel) {
+              core.warning('Issue already has "Content Review Ready" label — skipping.');
+              core.setOutput('already_done', 'true');
+            } else {
+              core.setOutput('already_done', 'false');
+            }
+
       - name: Set up Node.js
+        if: steps.label_check.outputs.already_done == 'false'
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
       - name: Install dependencies
+        if: steps.label_check.outputs.already_done == 'false'
         working-directory: WorkflowScripts
         run: npm i
 
       - name: Extract NCS links from issue body
+        if: steps.label_check.outputs.already_done == 'false'
         id: extract
         env:
           ISSUE_BODY: ${{ github.event.issue.body }}
@@ -52,7 +73,7 @@ jobs:
           fi
 
       - name: Comment if no NCS links found
-        if: steps.extract.outputs.found == 'false'
+        if: steps.label_check.outputs.already_done == 'false' && steps.extract.outputs.found == 'false'
         uses: actions/github-script@v7
         with:
           script: |
@@ -64,7 +85,7 @@ jobs:
             });
 
       - name: Process each NCS link
-        if: steps.extract.outputs.found == 'true'
+        if: steps.label_check.outputs.already_done == 'false' && steps.extract.outputs.found == 'true'
         id: process
         working-directory: WorkflowScripts
         env:
@@ -91,7 +112,7 @@ jobs:
           echo "$RESULTS" > /tmp/music_results.json
 
       - name: Post summary comment
-        if: steps.extract.outputs.found == 'true'
+        if: steps.label_check.outputs.already_done == 'false' && steps.extract.outputs.found == 'true'
         uses: actions/github-script@v7
         with:
           script: |
@@ -146,7 +167,7 @@ jobs:
             });
 
       - name: Add "Content Review Ready" label
-        if: steps.extract.outputs.found == 'true'
+        if: steps.label_check.outputs.already_done == 'false' && steps.extract.outputs.found == 'true'
         uses: actions/github-script@v7
         with:
           script: |
