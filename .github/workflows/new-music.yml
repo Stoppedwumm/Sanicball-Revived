@@ -109,6 +109,8 @@ jobs:
             RESULTS=$(echo "$RESULTS" | jq --argjson e "$ENTRY" '. + [$e]')
           done <<< "$LINKS"
 
+          echo "$RESULTS"
+
           echo "$RESULTS" > /tmp/music_results.json
 
       - name: Post summary comment
