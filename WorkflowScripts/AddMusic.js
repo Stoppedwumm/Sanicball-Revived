@@ -2,14 +2,15 @@ import ncs from 'nocopyrightsounds-api'
 import { program } from "commander"
 
 async function getSongByUrl(ncsUrl) {
-  // Extract slug from URL: "https://ncs.io/dreamin" → "dreamin"
   const slug = new URL(ncsUrl).pathname.replace("/", "")
 
-  // Search using the slug as the query
-  const results = await ncs.search({ search: slug })
+  // "Puzzle2024" → "Puzzle", "Dreamin2023" → "Dreamin"
+  const searchTerm = slug.replace(/\d+$/, '').trim()
 
-  // Find the exact match by comparing the song's url field
-  const song = results.find(s => s.url === `/${slug}`)
+  const results = await ncs.search({ search: searchTerm })
+
+  // Match by URL slug (case-insensitive)
+  const song = results.find(s => s.url.toLowerCase() === `/${slug.toLowerCase()}`)
 
   return song ?? null
 }
