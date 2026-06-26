@@ -179,3 +179,42 @@ jobs:
               issue_number: context.issue.number,
               labels: ['Content Review Ready']
             });
+      - name: Move issue to "Reviewing Request" in project
+        if: steps.label_check.outputs.already_done == 'false' && steps.extract.outputs.found == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          ISSUE_ID=$(gh api graphql -f query='
+            query($owner: String!, $repo: String!, $number: Int!) {
+              repository(owner: $owner, name: $repo) {
+                issue(number: $number) { id }
+              }
+            }' \
+            -f owner="${{ github.repository_owner }}" \
+            -f repo="${{ github.event.repository.name }}" \
+            -F number=${{ github.event.issue.number }} \
+            --jq '.data.repository.issue.id')
+
+          ITEM_ID=$(gh api graphql -f query='
+            mutation($project: ID!, $content: ID!) {
+              addProjectV2ItemById(input: {projectId: $project, contentId: $content}) {
+                item { id }
+              }
+            }' \
+            -f project="PVT_kwHOB7Hf-M4Bbwbh" \
+            -f content="$ISSUE_ID" \
+            --jq '.data.addProjectV2ItemById.item.id')
+
+          gh api graphql -f query='
+            mutation($project: ID!, $item: ID!, $field: ID!, $option: String!) {
+              updateProjectV2ItemFieldValue(input: {
+                projectId: $project
+                itemId: $item
+                fieldId: $field
+                value: { singleSelectOptionId: $option }
+              }) { projectV2Item { id } }
+            }' \
+            -f project="PVT_kwHOB7Hf-M4Bbwbh" \
+            -f item="$ITEM_ID" \
+            -f field="PVTSSF_lAHOB7Hf-M4BbwbhzhWepNs" \
+            -f option="a4d6d5b9"
