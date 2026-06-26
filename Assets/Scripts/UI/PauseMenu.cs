@@ -105,10 +105,10 @@ namespace Sanicball.UI
         private IEnumerator QuitMatchInternal() 
         {
             Debug.Log("Quit button pressed");
-            if (UnityServerConsole.Instance.isHost)
+            if (UnityServerConsole.Instance?.isHost == true)
             {
                 Debug.Log("Host!");
-                yield return UnityServerConsole.Instance.Shutdown();
+                yield return UnityServerConsole.Instance.Stop();
             } else {
                 Debug.Log("Not host!");
             }
