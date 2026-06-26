@@ -78,10 +78,10 @@ namespace Sanicball.Logic
         }
 
         // Static helper to stop the server from any other script
-        public static void Stop() {
+        public IEnumerator Stop() {
             Debug.Log("UnityServerConsole.Stop() called");
             if (Instance == null) Debug.LogWarning("Got Stop even though there is no server");
-            if (Instance != null) Instance.StartCoroutine(Instance.Shutdown());
+            if (Instance != null) yield return Instance.StartCoroutine(Instance.Shutdown());
         }
     }
 }
